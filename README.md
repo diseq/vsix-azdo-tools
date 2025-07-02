@@ -16,6 +16,9 @@ A VS Code extension that provides Azure DevOps integration with secure authentic
 
 **SECURITY NOTICE** - While this extension implements security best practices, users should review the code and ensure it meets their organization's security requirements before use in production environments.
 
+
+![image](grab.gif)
+
 ## Features
 
 ### 🔐 Secure Authentication
