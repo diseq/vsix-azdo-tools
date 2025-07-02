@@ -1,0 +1,44 @@
+name: Publish Pre-release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Pre-release version (e.g., 0.1.0-beta.1)'
+        required: true
+        type: string
+
+jobs:
+  publish-prerelease:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install mise
+      uses: jdx/mise-action@v2
+      
+    - name: Install dependencies
+      run: mise run install
+      
+    - name: Run tests
+      run: npm test
+      
+    - name: Update version for pre-release
+      run: npm version ${{ github.event.inputs.version }} --no-git-tag-version
+      
+    - name: Build extension package
+      run: mise run package
+      
+    - name: Publish pre-release to Visual Studio Marketplace
+      run: npx @vscode/vsce publish --pre-release --packagePath *.vsix
+      env:
+        VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        
+    - name: Upload pre-release artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: vsix-prerelease-package
+        path: "*.vsix"
+        retention-days: 7

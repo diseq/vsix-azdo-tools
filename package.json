@@ -1,0 +1,384 @@
+{
+	"name": "azdo-tools",
+	"displayName": "Azure DevOps Tools",
+	"description": "A VS Code extension for Azure DevOps integration with enhanced work item management and team collaboration features in Github Copilot",
+	"version": "0.1.2",
+	"publisher": "diseq",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/diseq/vsix-azdo-tools.git"
+	},
+	"engines": {
+		"vscode": "^1.101.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"main": "./dist/extension.js",
+	"activationEvents": [],
+	"contributes": {
+		"configuration": {
+			"title": "Azure DevOps Tools",
+			"properties": {
+				"azureDevOpsTools.readonly": {
+					"type": "boolean",
+					"default": true,
+					"description": "When enabled, prevents commands that make changes to Azure DevOps (create, update, delete operations). This provides a safe read-only mode for viewing data without risk of modifications."
+				}
+			}
+		},
+		"commands": [
+			{
+				"command": "azureDevOps.setOrganization",
+				"title": "Set Organization",
+				"category": "Azure DevOps"
+			},
+			{
+				"command": "azureDevOps.signIn",
+				"title": "Sign In",
+				"category": "Azure DevOps"
+			},
+			{
+				"command": "azureDevOps.signOut",
+				"title": "Sign Out",
+				"category": "Azure DevOps"
+			},
+			{
+				"command": "azureDevOps.testConnection",
+				"title": "Test Connection",
+				"category": "Azure DevOps"
+			},
+			{
+				"command": "azureDevOps.status",
+				"title": "Show Status",
+				"category": "Azure DevOps"
+			},
+			{
+				"command": "azureDevOps.signInDeviceCode",
+				"title": "Sign In (Device Code)",
+				"category": "Azure DevOps"
+			},
+			{
+				"command": "azureDevOps.toggleReadonly",
+				"title": "Toggle Readonly Mode",
+				"category": "Azure DevOps"
+			},
+			{
+				"command": "azureDevOps.signInVSCode",
+				"title": "Sign In (VS Code Auth)",
+				"category": "Azure DevOps"
+			}
+		],
+		"languageModelTools": [
+			{
+				"name": "azure-devops_login",
+				"tags": [
+					"azure-devops",
+					"authentication"
+				],
+				"toolReferenceName": "adoLogin",
+				"displayName": "Azure DevOps Login",
+				"modelDescription": "Authenticate with Azure DevOps to access projects, work items, and repositories",
+				"canBeReferencedInPrompt": true,
+				"icon": "$(azure-devops)",
+				"inputSchema": {
+					"type": "object",
+					"properties": {}
+				}
+			},
+			{
+				"name": "azure-devops_projects",
+				"tags": [
+					"azure-devops",
+					"projects"
+				],
+				"toolReferenceName": "adoProjects",
+				"displayName": "List Azure DevOps Projects",
+				"modelDescription": "Get a list of all projects in your Azure DevOps organization",
+				"canBeReferencedInPrompt": true,
+				"icon": "$(project)",
+				"inputSchema": {
+					"type": "object",
+					"properties": {}
+				}
+			},
+			{
+				"name": "azure-devops_wiql-workitems",
+				"tags": [
+					"azure-devops",
+					"wiql",
+					"workitems",
+					"query"
+				],
+				"toolReferenceName": "adoWiqlWorkItems",
+				"displayName": "Query Azure DevOps Work Items (WIQL)",
+				"modelDescription": "Execute WIQL queries to find work items in Azure DevOps. Returns a flat list of work items. Use FROM WorkItems for flat results. Supports: SELECT fields, WHERE conditions with operators (=, <>, >, <, >=, <=, CONTAINS, IN, NOT IN, UNDER, NOT UNDER, EVER, WAS EVER), logical operators (AND, OR, NOT), grouping with parentheses, ORDER BY, ASOF for historical queries. Field types: String, Integer, Double, DateTime, Boolean, Identity, TreePath, PlainText. Macros: @Me, @Today, @Project, @StartOfDay/Week/Month/Year. Example: 'SELECT [System.Id], [System.Title], [System.State] FROM WorkItems WHERE [System.TeamProject] = @Project AND [System.AssignedTo] = @Me AND [System.State] IN (\"Active\", \"New\") ORDER BY [System.ChangedDate] DESC'",
+				"canBeReferencedInPrompt": true,
+				"icon": "$(search)",
+				"inputSchema": {
+					"type": "object",
+					"properties": {
+						"wiqlQuery": {
+							"type": "string",
+							"description": "The WIQL query to execute. Should select from WorkItems table for flat results."
+						},
+						"scope": {
+							"type": "string",
+							"enum": ["organization", "project", "team"],
+							"description": "The scope of the query: organization, project, or team level"
+						},
+						"projectName": {
+							"type": "string",
+							"description": "Project name (required for project and team scope)"
+						},
+						"teamName": {
+							"type": "string",
+							"description": "Team name (required for team scope)"
+						},
+						"top": {
+							"type": "number",
+							"description": "Maximum number of work items to return (default: 50)"
+						}
+					},
+					"required": ["wiqlQuery", "scope"]
+				}
+			},
+			{
+				"name": "azure-devops_wiql-workitemlinks",
+				"tags": [
+					"azure-devops",
+					"wiql",
+					"workitemlinks",
+					"hierarchy",
+					"relationships"
+				],
+				"toolReferenceName": "adoWiqlWorkItemLinks",
+				"displayName": "Query Azure DevOps Work Item Links (WIQL)",
+				"modelDescription": "Execute WIQL queries to find work item relationships and hierarchies in Azure DevOps. Returns a tree structure showing parent-child relationships. Use FROM WorkItemLinks for hierarchical results. Supports: SELECT fields, WHERE conditions for [Source].[Field], [Target].[Field], and [System.Links.LinkType], operators (=, <>, >, <, >=, <=, CONTAINS, IN, NOT IN, UNDER, NOT UNDER, EVER, WAS EVER), logical operators (AND, OR, NOT), grouping with parentheses, ORDER BY, MODE clauses (Recursive for trees, MustContain, MayContain, DoesNotContain). Link types: System.LinkTypes.Hierarchy-Forward, System.LinkTypes.Related, System.LinkTypes.Dependency-Predecessor/Successor. Example: 'SELECT [System.Id], [System.Title] FROM WorkItemLinks WHERE [Source].[System.TeamProject] = @Project AND [System.Links.LinkType] = \"System.LinkTypes.Hierarchy-Forward\" AND [Target].[System.State] <> \"Closed\" MODE (Recursive)'",
+				"canBeReferencedInPrompt": true,
+				"icon": "$(type-hierarchy)",
+				"inputSchema": {
+					"type": "object",
+					"properties": {
+						"wiqlQuery": {
+							"type": "string",
+							"description": "The WIQL query to execute. Should select from WorkItemLinks table for hierarchical results."
+						},
+						"scope": {
+							"type": "string",
+							"enum": ["organization", "project", "team"],
+							"description": "The scope of the query: organization, project, or team level"
+						},
+						"projectName": {
+							"type": "string",
+							"description": "Project name (required for project and team scope)"
+						},
+						"teamName": {
+							"type": "string",
+							"description": "Team name (required for team scope)"
+						},
+						"top": {
+							"type": "number",
+							"description": "Maximum number of work item relationships to return (default: 50)"
+						}
+					},
+					"required": ["wiqlQuery", "scope"]
+				}
+			},
+			{
+				"name": "azure-devops_create-workitem",
+				"tags": [
+					"azure-devops",
+					"workitem",
+					"create",
+					"new"
+				],
+				"toolReferenceName": "adoCreateWorkItem",
+				"displayName": "Create Azure DevOps Work Item",
+				"modelDescription": "Create a new work item in Azure DevOps with all specified fields. Supports all work item types (User Story, Task, Bug, Feature, Epic, etc.) and custom fields. Use field reference names like 'System.Title', 'System.Description', 'System.AssignedTo', etc.",
+				"canBeReferencedInPrompt": true,
+				"icon": "$(add)",
+				"inputSchema": {
+					"type": "object",
+					"properties": {
+						"projectName": {
+							"type": "string",
+							"description": "Name of the Azure DevOps project where the work item will be created"
+						},
+						"workItemType": {
+							"type": "string",
+							"description": "Type of work item to create (e.g., 'User Story', 'Task', 'Bug', 'Feature', 'Epic')"
+						},
+						"fields": {
+							"type": "object",
+							"description": "Object containing field reference names and values (e.g., {'System.Title': 'My Task', 'System.Description': 'Task description', 'System.AssignedTo': 'user@company.com'})",
+							"additionalProperties": {
+								"type": ["string", "number", "boolean", "object", "array"]
+							}
+						}
+					},
+					"required": ["projectName", "workItemType", "fields"]
+				}
+			},
+			{
+				"name": "azure-devops_update-workitem",
+				"tags": [
+					"azure-devops",
+					"workitem",
+					"update",
+					"modify"
+				],
+				"toolReferenceName": "adoUpdateWorkItem",
+				"displayName": "Update Azure DevOps Work Item",
+				"modelDescription": "Update an existing work item in Azure DevOps. Can modify any field including title, description, assignee, state, custom fields, etc. Use field reference names like 'System.Title', 'System.State', 'System.AssignedTo'.",
+				"canBeReferencedInPrompt": true,
+				"icon": "$(edit)",
+				"inputSchema": {
+					"type": "object",
+					"properties": {
+						"workItemId": {
+							"type": "number",
+							"description": "ID of the work item to update"
+						},
+						"fields": {
+							"type": "object",
+							"description": "Object containing field reference names and new values (e.g., {'System.Title': 'Updated Title', 'System.State': 'Active'})",
+							"additionalProperties": {
+								"type": ["string", "number", "boolean", "object", "array"]
+							}
+						}
+					},
+					"required": ["workItemId", "fields"]
+				}
+			},
+			{
+				"name": "azure-devops_delete-workitem",
+				"tags": [
+					"azure-devops",
+					"workitem",
+					"delete",
+					"remove"
+				],
+				"toolReferenceName": "adoDeleteWorkItem",
+				"displayName": "Delete Azure DevOps Work Item",
+				"modelDescription": "Delete a work item from Azure DevOps permanently. This action cannot be undone.",
+				"canBeReferencedInPrompt": true,
+				"icon": "$(trash)",
+				"inputSchema": {
+					"type": "object",
+					"properties": {
+						"workItemId": {
+							"type": "number",
+							"description": "ID of the work item to delete"
+						}
+					},
+					"required": ["workItemId"]
+				}
+			},
+			{
+				"name": "azure-devops_get-workitem-history",
+				"tags": [
+					"azure-devops",
+					"workitem",
+					"history",
+					"updates",
+					"changes"
+				],
+				"toolReferenceName": "adoGetWorkItemHistory",
+				"displayName": "Get Azure DevOps Work Item History",
+				"modelDescription": "Retrieve the complete change history of a work item including all field changes, who made them, and when. Returns raw revision data showing old and new values for each field change.",
+				"canBeReferencedInPrompt": true,
+				"icon": "$(history)",
+				"inputSchema": {
+					"type": "object",
+					"properties": {
+						"workItemId": {
+							"type": "number",
+							"description": "ID of the work item to get history for"
+						}
+					},
+					"required": ["workItemId"]
+				}
+			},
+			{
+				"name": "azure-devops_get-workitem-comments",
+				"tags": [
+					"azure-devops",
+					"workitem",
+					"comments",
+					"discussion"
+				],
+				"toolReferenceName": "adoGetWorkItemComments",
+				"displayName": "Get Azure DevOps Work Item Comments",
+				"modelDescription": "Retrieve all comments from a work item's discussion thread. Returns raw comment data including text, author, timestamps, and modification history.",
+				"canBeReferencedInPrompt": true,
+				"icon": "$(comment-discussion)",
+				"inputSchema": {
+					"type": "object",
+					"properties": {
+						"workItemId": {
+							"type": "number",
+							"description": "ID of the work item to get comments for"
+						}
+					},
+					"required": ["workItemId"]
+				}
+			},
+			{
+				"name": "azure-devops_add-workitem-comment",
+				"tags": [
+					"azure-devops",
+					"workitem",
+					"comment",
+					"add",
+					"discussion"
+				],
+				"toolReferenceName": "adoAddWorkItemComment",
+				"displayName": "Add Comment to Azure DevOps Work Item",
+				"modelDescription": "Add a new comment to a work item's discussion thread. The comment will be attributed to the authenticated user.",
+				"canBeReferencedInPrompt": true,
+				"icon": "$(comment-add)",
+				"inputSchema": {
+					"type": "object",
+					"properties": {
+						"workItemId": {
+							"type": "number",
+							"description": "ID of the work item to add comment to"
+						},
+						"commentText": {
+							"type": "string",
+							"description": "Text content of the comment to add"
+						}
+					},
+					"required": ["workItemId", "commentText"]
+				}
+			}
+		]
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run package",
+		"compile": "webpack",
+		"watch": "webpack --watch",
+		"package": "webpack --mode production --devtool hidden-source-map",
+		"vsce:package": "vsce package",
+		"test": "jest",
+		"test:watch": "jest --watch",
+		"test:coverage": "jest --coverage"
+	},
+	"dependencies": {
+		"@azure/msal-node": "^2.13.0"
+	},
+	"devDependencies": {
+		"@types/jest": "^29.5.14",
+		"@types/node": "^24.0.3",
+		"@types/vscode": "^1.101.0",
+		"@vscode/vsce": "^3.5.0",
+		"jest": "^29.7.0",
+		"rimraf": "^6.0.1",
+		"ts-jest": "^29.4.0",
+		"ts-loader": "^9.5.1",
+		"typescript": "^5.8.3",
+		"webpack": "^5.96.1",
+		"webpack-cli": "^5.1.4"
+	}
+}

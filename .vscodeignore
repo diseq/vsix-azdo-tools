@@ -1,0 +1,8 @@
+# Ignore everything by default
+**
+
+# Only include essential runtime files
+!package.json
+!README.md
+!LICENSE
+!dist/extension.js
