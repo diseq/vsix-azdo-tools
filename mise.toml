@@ -1,0 +1,11 @@
+[tools]
+node = "24.2.0"
+
+[tasks.install]
+run = "npm install"
+
+[tasks.test]
+run = "npm test"
+
+[tasks.package]
+run = "npm run vsce:package"

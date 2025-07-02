@@ -1,0 +1,1 @@
+https://github.com/MicrosoftDocs/vsts-rest-api-specs
