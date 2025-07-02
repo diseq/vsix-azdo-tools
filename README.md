@@ -110,16 +110,13 @@ Once authenticated, you can use the Azure DevOps tools in VS Code Chat:
 ## Installation
 
 ```bash
-code --install-extension adzo-tools-0.1.0.vsix
+code --install-extension adzo-tools-0.1.2.vsix
 ```
 
 ## Authentication Details
 
-This extension uses the same authentication approach as other Microsoft VS Code extensions:
+This extension uses the same authentication approach as other Microsoft VS Code extensions (embedded) and a legacy device code.
 
-- **Client ID**: `872cd9fa-d31f-45e0-9eab-6e460a02d1f1` (Visual Studio client ID)
-- **Scope**: `499b84ac-1321-427f-aa17-267ca6975798/.default` (Azure DevOps scope)
-- **Flow**: Device Code Flow for secure desktop authentication
 - **Token Storage**: VS Code SecretStorage API
 
 ## Troubleshooting
@@ -129,7 +126,7 @@ If Copilot says it cannot execute Azure DevOps tools like `#azure-devops_create-
 
 1. **Check Extension Installation**: Ensure the extension is properly installed and activated
    ```bash
-   code --install-extension basic-mcp-extension-0.1.0.vsix
+   code --install-extension basic-mcp-extension-0.1.2.vsix
    ```
 
 2. **Reload VS Code**: After installation, reload the window
